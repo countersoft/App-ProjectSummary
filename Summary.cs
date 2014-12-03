@@ -38,10 +38,26 @@ namespace Summary
             ReportOptions options = new ReportOptions();
 
             SummaryModel model = new SummaryModel();
+            IssuesGridFilter tmp = new IssuesGridFilter();
 
             try
             {
-                if (CurrentCard.Options.ContainsKey(AppGuid))
+
+                if (CurrentCard.IsNew || !CurrentCard.Options.ContainsKey(AppGuid))
+                {
+                    tmp = new IssuesGridFilter(HttpSessionManager.GetFilter(CurrentCard.Id, CurrentCard.Filter));
+
+                    if (tmp == null)
+                    {
+                        tmp = CurrentCard.Options[AppGuid].FromJson<IssuesGridFilter>();
+                    }
+
+                    if (tmp.Projects == Constants.AllProjectsId.ToString())
+                        selectedProjects.Add(Constants.AllProjectsId);
+                    else
+                        selectedProjects = tmp.GetProjects();
+                }
+                else
                 {
                     options = CurrentCard.Options[AppGuid].FromJson<ReportOptions>();
 
@@ -54,12 +70,14 @@ namespace Summary
                         selectedProjects.AddRange(options.ProjectIds);
                     }
                 }
-                else
-                {
-                    options = new ReportOptions();
-                }
+               
             }
-            catch (Exception ex) { }
+            catch (Exception ex) 
+            {
+                tmp = new IssuesGridFilter(HttpSessionManager.GetFilter(CurrentCard.Id, IssuesFilter.CreateProjectFilter(UserContext.User.Entity.Id, UserContext.Project.Entity.Id)));
+
+                selectedProjects = tmp.GetProjects();
+            }
 
             model.ProjectList = GetProjectFilter(selectedProjects);
             model.Options = options;
