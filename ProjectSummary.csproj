@@ -96,6 +96,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProjectAttribute.cs" />
+    <Compile Include="ProjectAttributeRepository.cs" />
     <Compile Include="ReportManager.cs" />
     <Compile Include="Summary.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -107,6 +109,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="views\_ProjectAttributes.cshtml" />
     <None Include="views\_Summary.cshtml" />
     <None Include="views\_SummaryItem.cshtml" />
     <None Include="views\Summary.cshtml" />

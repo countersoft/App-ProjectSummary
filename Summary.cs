@@ -16,6 +16,8 @@ using Countersoft.Gemini.Infrastructure;
 using Countersoft.Gemini.Infrastructure.Apps;
 using System.Linq;
 using Countersoft.Gemini.Infrastructure.Helpers;
+using ProjectSummary.Data;
+using ProjectSummary.Models;
 
 namespace Summary
 {
@@ -42,7 +44,6 @@ namespace Summary
 
             try
             {
-
                 if (CurrentCard.IsNew || !CurrentCard.Options.ContainsKey(AppGuid))
                 {
                     tmp = new IssuesGridFilter(HttpSessionManager.GetFilter(CurrentCard.Id, CurrentCard.Filter));
@@ -122,6 +123,37 @@ namespace Summary
             }
 
             return new MultiSelectList(allProjectsList, "id", "Name", selectedProject);
+        }
+
+        [AppUrl("getprojectattributes")]
+        public ActionResult GetProjectAttributes()
+        {
+            var projectIds = Request.Form["projectIds[]"] == "0" ? Request.Form["projectIds[]"].SplitEntries(',') : Request.Form["projectIds[]"].SplitEntries(',', 0);
+
+            if (projectIds.Count == 1 && projectIds[0] != 0)
+            {
+                var projectAttributes = ProjectAttributeRepository.GetAll(projectIds[0]);
+                var project = ProjectManager.Get(projectIds[0]);
+
+                if (project != null && project.Entity.LeadId > 0)
+                {
+                    var user  = UserManager.Get(project.Entity.LeadId);
+                    ProjectAttribute attribute = new ProjectAttribute() { Attributename = "Lead", Attributevalue = user.Fullname };
+                    projectAttributes.Insert(0, attribute);
+                }
+
+                return JsonSuccess(new
+                {
+                    Html = RenderPartialViewToString(this, AppManager.Instance.GetAppUrl(AppGuid, "views/_ProjectAttributes.cshtml"), projectAttributes)
+                });
+            }
+            else
+            {
+                return JsonSuccess(new
+                {
+                    Html = ""
+                });
+            }
         }
 
         [AppUrl("get")]

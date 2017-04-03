@@ -3,7 +3,7 @@
     init: function()
     {
         App_Summary.reportChanged();
-
+        
         $(".report-summary-table-button", "#report-menu").click(function () {
             $("#SummaryChart").val("false");
             $(".report-summary-chart").fadeOut('fast', function () {
@@ -59,12 +59,25 @@
 
         $("#ProjectIds").change(function (e) {
             App_Summary.projectChanged();
-            App_Summary.reportChanged();
+            App_Summary.reportChanged();            
         });
     },
     escapeDropdowns: function (guid, selector) {
         $(selector).hide();
         gemini_keyboard.unbindEscape(guid);
+    },
+    projectAttributeChanged: function() {
+        var value = $('#ProjectIds').val();
+
+        var successCallback = function (response)
+        {
+            if (response.success)
+            {
+                $('#ProjectAttributeContainer').html(response.Result.Data.Html);
+            }
+        }
+
+        gemini_ajax.postCall("apps/Summary", "getProjectAttributes", successCallback, null, { projectIds: value }, null, true);
     },
     projectChanged: function () {
         var value = $('#ProjectIds').val();
@@ -120,7 +133,7 @@
 
         function LoadSummary(response) {
             $("#report-content").html(response.Result.Html);
-
+            
             if (response.Result.SavedCard != null) {
                 gemini_appnav.pageCard.Options['4880E0A6-7ACD-4D47-AB3D-B414C6C66617'] = response.Result.SavedCard.Options['4880E0A6-7ACD-4D47-AB3D-B414C6C66617'];
             }
@@ -141,6 +154,8 @@
             gemini_ajax.postCall("apps/Summary", "get", LoadStatuses, null, jQuery.param(options), null, true);
             options[reportIndex].value = 38;
             gemini_ajax.postCall("apps/Summary", "get", LoadResolutions, null, jQuery.param(options), null, true);
+
+            App_Summary.projectAttributeChanged();
 
             gemini_ui.cursorDefault();
         }
